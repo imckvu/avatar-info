@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Avatar Info</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .form-control {
+      background-color: #ffffff;
+      color: #000000;
+      border: 1px solid #ced4da;
+      padding: 0.375rem 0.75rem;
+      border-radius: 0.25rem;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+    .form-control::placeholder {
+      color: #6c757d;
+      opacity: 1;
+    }
+    .form-control:focus {
+      border-color: #80bdff;
+      outline: 0;
+      box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+    }
+    #avatar-info {
+      margin-top: 1rem;
+      border: 1px solid #ced4da;
+      padding: 1rem;
+      border-radius: 0.25rem;
+      background-color: #f8f9fa;
+    }
+    .avatar-image {
+      max-width: 100px;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <input type="text" class="form-control" id="idOrName" placeholder="Enter ID or Name" required />
+    <br />
+    <button onclick="getAvatarInfo();">Get Avatar Info</button>
+    <div id="error-message" style="color: red;"></div>
+    <div id="avatar-info"></div>
+  </div>
+  <script>
+    function getAvatarInfo() {
+      var idOrName = document.getElementById('idOrName').value;
+      var errorMessageElement = document.getElementById('error-message');
+      var avatarInfoElement = document.getElementById('avatar-info');
+      errorMessageElement.innerText = ""; // Clear previous error messages
+      avatarInfoElement.innerHTML = ""; // Clear previous avatar info
+
+      if (!idOrName) {
+        errorMessageElement.innerText = "Please enter an ID or name.";
+        return;
+      }
+
+      var apiUrl = 'https://triggerless.com/api/avatarcard/' + encodeURIComponent(idOrName);
+
+      fetch(apiUrl)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          displayAvatarInfo(data);
+        })
+        .catch(error => {
+          errorMessageElement.innerText = "Error: Failed to fetch avatar info.";
+          console.error('There was a problem with the fetch operation:', error);
+        });
+    }
+
+    function displayAvatarInfo(data) {
+      var avatarInfoElement = document.getElementById('avatar-info');
+
+      if (!data) {
+        avatarInfoElement.innerHTML = "No data available for the given ID or name.";
+        return;
+      }
+
+      var htmlContent = `
+        <h2>Avatar Info</h2>
+        <p><strong>ID:</strong> ${data.cid}</p>
+        <p><strong>Name:</strong> ${data.avname}</p>
+        <p><strong>URL:</strong> <a href="${data.url}" target="_blank">${data.url}</a></p>
+        <p><strong>Image URL:</strong> <a href="${data.avpic_url}" target="_blank">${data.avpic_url}</a></p>
+        <img src="${data.avpic_url}" alt="Avatar Image" class="avatar-image">
+        <p><strong>Registered:</strong> ${data.registered}</p>
+        <p><strong>Last Login:</strong> ${data.last_login}</p>
+        <p><strong>Gender:</strong> ${data.gender}</p>
+        <p><strong>Age:</strong> ${data.age}</p>
+        <p><strong>Location:</strong> ${data.location}</p>
+        <p><strong>Relationship Status:</strong> ${data.dating.relationship_status}</p>
+        <p><strong>Orientation:</strong> ${data.dating.orientation}</p>
+        <p><strong>Looking For:</strong> ${data.dating.looking_for}</p>
+        <p><strong>Badge Count:</strong> ${data.badge_count}</p>
+        <p><strong>IMVU Level:</strong> ${data.imvu_level}</p>
+      `;
+
+      avatarInfoElement.innerHTML = htmlContent;
+    }
+  </script>
+</body>
+</html>
